@@ -15,7 +15,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Sparkles, TrendingUp, LayoutGrid, Zap } from "lucide-react";
-import { InfiniteGrid } from "../../components/ui/infinite-grid";
+import { InfiniteGrid } from "./ui/infinite-grid";
 
 // =============================================================================
 // ANIMATION VARIANTS
