@@ -112,6 +112,8 @@ const LOT_QUANTITY_PATTERNS = [
     /\bx\d+\b/i,      // x2, x3 (standalone)
     /\(\d+\s*cards?\)/i,  // (2 cards), (3 card)
     /\[\d+\s*cards?\]/i,  // [2 cards], [3 card]
+    /\b[2-9]\s*cards?\b/i,   // 2 card, 3 cards, etc. (standalone, not 1st card)
+    /\b\d{2,}\s*cards?\b/i,  // 10 cards, 20 card, etc. (double digit)
 ];
 
 // Excluded products (not Bowman Chrome prospects)
