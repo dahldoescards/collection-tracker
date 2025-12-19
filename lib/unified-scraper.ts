@@ -95,11 +95,23 @@ const GRADED_INDICATORS = [
     'gem mint', 'gem mt 10', 'mint 9', 'perfect 10', 'pristine',
 ];
 
-// Lot indicators
+// Lot indicators - text patterns
 const LOT_INDICATORS = [
     '(2)', '(3)', '(4)', '(5)', '(6)', '(10)', '(20)',
+    '[2]', '[3]', '[4]', '[5]', '[6]', '[10]', '[20]',
     'lot', 'bundle', 'set of', 'collection of', 'group',
-    '& ', ' and ', ' + ', ' x ',
+    '& ', ' and ', ' + ',
+];
+
+// Regex patterns for lot quantities like (x2), [x3], (2x), x4, etc.
+const LOT_QUANTITY_PATTERNS = [
+    /\(x\d+\)/i,      // (x2), (x3), (X10)
+    /\[x\d+\]/i,      // [x2], [x3]
+    /\(\d+x\)/i,      // (2x), (3x)
+    /\[\d+x\]/i,      // [2x], [3x]
+    /\bx\d+\b/i,      // x2, x3 (standalone)
+    /\(\d+\s*cards?\)/i,  // (2 cards), (3 card)
+    /\[\d+\s*cards?\]/i,  // [2 cards], [3 card]
 ];
 
 // Excluded products (not Bowman Chrome prospects)
@@ -355,12 +367,24 @@ function categorizeListingSale(sale: ParsedSale): FilteredSale {
         }
     }
 
-    // Check for lots
+    // Check for lots - text patterns
     if (isBaseAuto) {
         for (const lot of LOT_INDICATORS) {
             if (lowerTitle.includes(lot)) {
                 isBaseAuto = false;
                 exclusionReason = `Lot/bundle: ${lot}`;
+                break;
+            }
+        }
+    }
+
+    // Check for lots - regex patterns like (x2), [4], x3, etc.
+    if (isBaseAuto) {
+        for (const pattern of LOT_QUANTITY_PATTERNS) {
+            const match = sale.title.match(pattern);
+            if (match) {
+                isBaseAuto = false;
+                exclusionReason = `Lot quantity: ${match[0]}`;
                 break;
             }
         }
