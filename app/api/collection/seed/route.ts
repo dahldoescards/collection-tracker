@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
             articleDate,
             articleSource,
             releaseYear: player.releaseYear || 2025,
-            notes: player.notes || null,
+            notes: player.notes || undefined,
             createdAt: new Date(),
         }));
 
