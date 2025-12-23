@@ -92,6 +92,7 @@ const PARALLEL_COLORS = [
 // Graded card indicators
 const GRADED_INDICATORS = [
     'psa', 'bgs', 'sgc', 'cgc', 'hga', 'csg',
+    'beckett',  // Beckett grading
     'gem mint', 'gem mt 10', 'mint 9', 'perfect 10', 'pristine',
 ];
 
@@ -126,6 +127,7 @@ const EXCLUDED_PRODUCTS = [
     'bunt', 'digital', 'nft', 'virtual',
     'bowman u', 'bowman university',  // College products, not prospect products
     'mega',  // Mega Box exclusives are different parallels
+    'class of',  // "Class of 2024" etc. - commemorative products, not prospect autos
 ];
 
 // In-Person (IP) autograph indicators - these are AFTER-MARKET signatures, not on-card autos!
@@ -138,6 +140,8 @@ const IP_AUTOGRAPH_INDICATORS = [
     'signed in',      // "Signed in person"
     'signed at',      // "Signed at event"
     'signed by',      // "Signed by player" (usually IP)
+    'signed card',    // "Signed Card" (usually aftermarket)
+    ' signed ',       // "Signed" standalone (space-padded to be more precise)
     'hand signed',    // "Hand Signed" (usually aftermarket)
     'hand-signed',    // "Hand-Signed"
     'authentic auto', // Often used for IP autos
@@ -145,6 +149,14 @@ const IP_AUTOGRAPH_INDICATORS = [
     'meet and greet', // Meet and greet signings
     'autograph event',// Event signings
     'signing event',  // Signing events
+];
+
+// OBO (Or Best Offer) and unclear pricing indicators
+const UNCLEAR_PRICING_INDICATORS = [
+    ' obo',           // "OBO" - Or Best Offer (price is negotiated, not accurate)
+    ' obo ',          // OBO standalone
+    'or best offer',  // Full text
+    'best offer accepted',
 ];
 
 // Serial number pattern (indicates numbered parallel)
@@ -410,6 +422,18 @@ function categorizeListingSale(sale: ParsedSale): FilteredSale {
                 isBaseAuto = false;
                 isRefractor = false; // IP autos should never be used, even as fallback
                 exclusionReason = `IP/aftermarket auto: ${ipIndicator.trim()}`;
+                break;
+            }
+        }
+    }
+
+    // Check for OBO/unclear pricing - these sales don't reflect true market value
+    if (isBaseAuto || isRefractor) {
+        for (const oboIndicator of UNCLEAR_PRICING_INDICATORS) {
+            if (lowerTitle.includes(oboIndicator)) {
+                isBaseAuto = false;
+                isRefractor = false;
+                exclusionReason = `Unclear pricing: ${oboIndicator.trim()}`;
                 break;
             }
         }
