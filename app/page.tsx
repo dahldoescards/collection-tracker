@@ -13,6 +13,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -56,12 +57,16 @@ interface RefreshResponse {
 // =============================================================================
 
 export default function CollectionPage() {
+    // Auth session
+    const { data: session } = useSession();
+
     // State
     const [data, setData] = useState<CollectionData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [refreshingCards, setRefreshingCards] = useState<Set<string>>(new Set());
+    const [favorites, setFavorites] = useState<string[]>([]);
 
     // Fetch collection data
     const fetchData = useCallback(async () => {
@@ -82,10 +87,32 @@ export default function CollectionPage() {
         }
     }, []);
 
+    // Fetch favorites
+    const fetchFavorites = useCallback(async () => {
+        if (!session?.user) {
+            setFavorites([]);
+            return;
+        }
+        try {
+            const response = await fetch('/api/favorites');
+            const json = await response.json();
+            if (json.success && json.data) {
+                setFavorites(json.data.favorites);
+            }
+        } catch (err) {
+            console.error('Failed to fetch favorites:', err);
+        }
+    }, [session?.user]);
+
     // Initial load
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    // Load favorites when session changes
+    useEffect(() => {
+        fetchFavorites();
+    }, [fetchFavorites]);
 
     // Refresh single card
     const handleRefreshCard = useCallback(async (playerName: string) => {
@@ -241,6 +268,7 @@ export default function CollectionPage() {
             onRefreshAll={handleRefreshAll}
             isRefreshing={isRefreshing}
             refreshingCards={refreshingCards}
+            favorites={favorites}
         />
     );
 }

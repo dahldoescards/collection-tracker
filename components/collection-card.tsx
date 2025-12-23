@@ -31,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { TrackedCard, CompSale } from "@/lib/collection-types";
 import { PriceDeltaBadge, CompactDelta } from "./price-delta-badge";
+import { FavoriteButton } from "./favorite-button";
 
 // =============================================================================
 // TYPES
@@ -48,6 +49,12 @@ interface CollectionCardProps {
 
     /** Card layout variant */
     variant?: "compact" | "expanded";
+
+    /** Whether this card is favorited by the user */
+    isFavorite?: boolean;
+
+    /** Callback when favorite is toggled */
+    onFavoriteToggle?: (isFavorite: boolean) => void;
 
     /** Additional classes */
     className?: string;
@@ -216,6 +223,8 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
     onRefresh,
     isRefreshing = false,
     variant = "compact",
+    isFavorite = false,
+    onFavoriteToggle,
     className,
 }) => {
     const router = useRouter();
@@ -290,6 +299,14 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
 
                     {/* Action buttons */}
                     <div className="flex items-center gap-1">
+                        {/* Favorite button */}
+                        <FavoriteButton
+                            playerName={card.normalizedPlayerName}
+                            initialIsFavorite={isFavorite}
+                            onToggle={onFavoriteToggle}
+                            size="sm"
+                        />
+
                         {/* View Chart button */}
                         <button
                             onClick={handleViewChart}

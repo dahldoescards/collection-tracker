@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SessionProvider } from "@/components/session-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -74,8 +75,11 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-zinc-950 text-white min-h-screen`}
             >
-                {children}
+                <SessionProvider>
+                    {children}
+                </SessionProvider>
             </body>
         </html>
     );
 }
+

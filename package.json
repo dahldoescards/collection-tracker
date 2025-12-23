@@ -10,16 +10,20 @@
     "build": "next build",
     "start": "next start --port ${PORT:-3001}",
     "lint": "eslint",
-    "refresh-all": "npx tsx scripts/refresh-all.ts"
+    "refresh-all": "npx tsx scripts/refresh-all.ts",
+    "cron:refresh": "npx tsx scripts/cron-refresh.ts"
   },
   "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.25",
     "lucide-react": "^0.556.0",
     "next": "^16.1.0",
+    "next-auth": "^5.0.0-beta.30",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "tailwind-merge": "^3.4.0",

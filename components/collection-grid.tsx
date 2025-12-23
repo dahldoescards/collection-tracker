@@ -12,7 +12,8 @@
  * @version 1.0.0
  */
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search,
@@ -31,12 +32,14 @@ import {
     DollarSign,
     Hash,
     Zap,
+    Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { InfiniteGrid } from "@/components/ui/infinite-grid";
 import { CollectionCard } from "./collection-card";
 import { PriceDeltaBadge, CompactDelta } from "./price-delta-badge";
+import { UserMenu } from "./user-menu";
 import {
     TrackedCard,
     DashboardStats,
@@ -66,6 +69,9 @@ interface CollectionGridProps {
 
     /** Which cards are currently being refreshed */
     refreshingCards?: Set<string>;
+
+    /** User's favorite player names */
+    favorites?: string[];
 
     /** Additional classes */
     className?: string;
@@ -266,6 +272,7 @@ export const CollectionGrid: React.FC<CollectionGridProps> = ({
     onRefreshAll,
     isRefreshing = false,
     refreshingCards = new Set(),
+    favorites = [],
     className,
 }) => {
     // State
@@ -273,12 +280,19 @@ export const CollectionGrid: React.FC<CollectionGridProps> = ({
     const [filters, setFilters] = useState<FilterOptions>(DEFAULT_FILTERS);
     const [showFilters, setShowFilters] = useState(false);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
     // Memoized filtered and sorted cards
     const processedCards = useMemo(() => {
-        const filtered = filterCards(cards, filters);
+        let filtered = filterCards(cards, filters);
+        // Apply favorites filter
+        if (showFavoritesOnly && favorites.length > 0) {
+            filtered = filtered.filter(card =>
+                favorites.includes(card.normalizedPlayerName)
+            );
+        }
         return sortCards(filtered, sortOption);
-    }, [cards, filters, sortOption]);
+    }, [cards, filters, sortOption, showFavoritesOnly, favorites]);
 
     // Handlers
     const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -303,7 +317,8 @@ export const CollectionGrid: React.FC<CollectionGridProps> = ({
 
     const hasActiveFilters = filters.searchQuery ||
         filters.deltaDirection !== "all" ||
-        filters.showStaleOnly;
+        filters.showStaleOnly ||
+        showFavoritesOnly;
 
     return (
         <InfiniteGrid>
@@ -312,14 +327,17 @@ export const CollectionGrid: React.FC<CollectionGridProps> = ({
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
+                    className="mb-8 flex items-start justify-between gap-4"
                 >
-                    <h1 className="text-4xl font-bold text-foreground mb-2">
-                        Collection Tracker
-                    </h1>
-                    <p className="text-muted-foreground">
-                        Track price movements for 1st Bowman Chrome Base Autos
-                    </p>
+                    <div>
+                        <h1 className="text-4xl font-bold text-foreground mb-2">
+                            Collection Tracker
+                        </h1>
+                        <p className="text-muted-foreground">
+                            Track price movements for 1st Bowman Chrome Base Autos
+                        </p>
+                    </div>
+                    <UserMenu favoriteCount={favorites.length} />
                 </motion.div>
 
                 {/* Stats Grid */}
@@ -547,10 +565,29 @@ export const CollectionGrid: React.FC<CollectionGridProps> = ({
                                     <span>Stale Only ({stats.staleCardCount})</span>
                                 </button>
 
+                                {/* Favorites Only Toggle */}
+                                {favorites.length > 0 && (
+                                    <button
+                                        onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                                        className={cn(
+                                            "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors",
+                                            showFavoritesOnly
+                                                ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                                                : "bg-white/10 text-muted-foreground hover:text-foreground border border-white/10"
+                                        )}
+                                    >
+                                        <Heart size={14} className={showFavoritesOnly ? "fill-current" : ""} />
+                                        <span>Favorites ({favorites.length})</span>
+                                    </button>
+                                )}
+
                                 {/* Reset Filters */}
                                 {hasActiveFilters && (
                                     <button
-                                        onClick={handleResetFilters}
+                                        onClick={() => {
+                                            handleResetFilters();
+                                            setShowFavoritesOnly(false);
+                                        }}
                                         className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                                     >
                                         <X size={14} />
@@ -589,6 +626,7 @@ export const CollectionGrid: React.FC<CollectionGridProps> = ({
                                     onRefresh={onRefreshCard}
                                     isRefreshing={refreshingCards.has(card.normalizedPlayerName)}
                                     variant={viewMode === "list" ? "compact" : "compact"}
+                                    isFavorite={favorites.includes(card.normalizedPlayerName)}
                                 />
                             </motion.div>
                         ))}
