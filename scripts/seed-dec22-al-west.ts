@@ -69,6 +69,7 @@ const AL_WEST_DEC_22: PlayerData[] = [
         team: 'TEX',
         price: 9,
         articleDate: '2025-12-22',
+        releaseYear: 2024, // 2024 Bowman Chrome
         notes: 'Power bat - 25 HR with elite contact. 91st percentile Max EV, 93rd Hard Hit% in AAA. 78.8% contact, 88.6% IZ contact. Only player with 25+ HR and 75%+ contact rate. 1B/DH destination - Rangers weakest positions.',
     },
 ];
